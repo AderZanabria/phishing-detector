@@ -1,0 +1,43 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      MODEL_PATH: /app/ml/models/phishing_model.pkl
+      FEATURES_PATH: /app/ml/models/feature_names.json
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+    volumes:
+      - ./ml/models:/app/ml/models
+      - ./backend/app:/app/backend/app
+    command: ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    networks:
+      - phishing
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    ports:
+      - "5173:5173"
+    environment:
+      # El navegador corre en el host: tiene que ver el puerto publicado, no el DNS interno.
+      VITE_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+    depends_on:
+      - backend
+    networks:
+      - phishing
+
+networks:
+  phishing:
+    driver: bridge

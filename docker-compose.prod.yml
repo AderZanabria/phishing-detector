@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      MODEL_PATH: /app/ml/models/phishing_model.pkl
+      FEATURES_PATH: /app/ml/models/feature_names.json
+      LOG_LEVEL: info
+      DECISION_THRESHOLD: "0.5"
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+    restart: unless-stopped
+    networks:
+      - phishing
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - phishing
+
+networks:
+  phishing:
+    driver: bridge

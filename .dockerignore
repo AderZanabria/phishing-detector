@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.git/
+.env
+.env.local
+node_modules/
+dist/
+.vite/
+.pytest_cache/
+.venv/
+*.md
+tests/
+notebooks/
+ml/notebooks/
+ml/data/raw/*.csv
+ml/data/processed/
